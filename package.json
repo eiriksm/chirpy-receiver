@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "start": "echo hello",
+    "test": "echo todo",
+    "lint": "echo todo",
+    "type-check": "echo todo",
+    "unit": "echo todo"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
