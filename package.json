@@ -4,7 +4,7 @@
     "test": "echo todo",
     "lint": "echo todo",
     "type-check": "echo todo",
-    "unit": "echo todo"
+    "unit": "./node_modules/.bin/jest *.test.ts"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
