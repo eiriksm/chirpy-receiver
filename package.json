@@ -3,7 +3,7 @@
     "start": "echo hello",
     "test": "echo todo",
     "lint": "echo todo",
-    "type-check": "echo todo",
+    "type-check": "npx tsc --noEmit *.ts",
     "unit": "./node_modules/.bin/jest *.test.ts"
   },
   "devDependencies": {
