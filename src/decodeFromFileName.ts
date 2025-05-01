@@ -104,11 +104,21 @@ function getCRC8(bytes) {
   }
 
 
+async function getStringFromFileName(file: string) : Promise<string> {
+    const blocks = await getRawStringBlocksFromFileName(file);
+    let str = "";
+    for (const block of blocks) {
+        let trimmed = block.trim();
+        str += trimmed;
+    }
+    return str;
+}
 
-async function main() {
+
+
+
+async function getRawStringBlocksFromFileName(file: string) : Promise<string[]> {
     var fft = new FFT(fftSize, 44100);
-    // Load the wav file we have, and convert it to a Float32Array
-    const file = 'tests/assets/1.wav'
     const buffer = readFileSync(file);
     let wav = new WaveFile(buffer)
     wav.toBitDepth('32f'); // Pipeline expects input as a Float32Array
@@ -167,7 +177,6 @@ async function main() {
         nFreqs});
 
     const startMsec = demodulator.findStartMsec(spectra);
-    console.log(startMsec);
     if (startMsec == -1) {
         console.log("No message found.")
         console.log("No Start-Of-Message sequence detected. Cannot decode transmission.");
@@ -180,7 +189,6 @@ async function main() {
     const recLenMsec = Math.round(nSamples / sampleRate * 1000);
     let results = [];
     demodulateSome();
-    console.log(results)
 
     function demodulateSome() {
         for (let tc = 0; tc < tonesPerIter; ++tc) {
@@ -344,7 +352,6 @@ function getBins(freq, sampleRate, fftSize, multiple = false) {
     else return -1;
   }
 
-main()
 
 
 function decodeTones(startMsec, endMsec, tones) {
@@ -387,7 +394,6 @@ function decodeTones(startMsec, endMsec, tones) {
 
       blocksHtml += "\nCRC: 0x" + block.crc.toString(16).padStart(2, "0") + "\n\n";
     }
-    console.log(blocksHtml);
 
     if (!decoder.valid) {
       console.log("Message cannot be reconstructed: invalid CRC in one or more blocks.");
@@ -464,5 +470,4 @@ function getToneBits(tone) {
     return res;
   }
 
-  // Export the main function.
-    export { main };
+    export { getRawStringBlocksFromFileName, getStringFromFileName };
