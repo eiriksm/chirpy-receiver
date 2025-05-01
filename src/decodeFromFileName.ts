@@ -194,13 +194,13 @@ async function getRawStringBlocksFromFileName(file: string) : Promise<string[]> 
         for (let tc = 0; tc < tonesPerIter; ++tc) {
         const msec = startMsec + tonePos * demodulator.toneLenMsec;
         if (msec + 200 > recLenMsec) {
-            results.push(decodeTones(startMsec, null, tones));
+            results.push(decodeTones(tones));
             return;
         }
         const tone = demodulator.detecToneAt(spectra, msec);
         tones.push(tone);
         if (doesEndInEOM(tones, demodulator.symFreqs.length - 1)) {
-            results.push(decodeTones(startMsec, msec, tones));
+            results.push(decodeTones(tones));
             return;
         }
         ++tonePos;
@@ -354,15 +354,7 @@ function getBins(freq, sampleRate, fftSize, multiple = false) {
 
 
 
-function decodeTones(startMsec, endMsec, tones) {
-    const startSecStr = (startMsec / 1000).toFixed(2);
-    if (!endMsec) {
-      console.log(`<p>Start of message: ${startSecStr}<br/>No End-Of-Message sequence detected</p>`);
-    }
-    else {
-      const endSecStr = (endMsec / 1000).toFixed(2);
-      console.log(`<p>Start of message: ${startSecStr}<br/>End of message: ${endSecStr}</p>`);
-    }
+function decodeTones(tones) {
     // Display tones
     let tonesStr = "";
     for (const t of tones) {
@@ -399,7 +391,6 @@ function decodeTones(startMsec, endMsec, tones) {
       console.log("Message cannot be reconstructed: invalid CRC in one or more blocks.");
       return;
     }
-    console.log("Message successfully decoded.");
     return decoder.ascii;
   }
 
