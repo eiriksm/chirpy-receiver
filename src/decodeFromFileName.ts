@@ -104,11 +104,21 @@ function getCRC8(bytes) {
   }
 
 
+async function getStringFromFileName(file: string) : Promise<string> {
+    const blocks = await getRawStringBlocksFromFileName(file);
+    let str = "";
+    for (const block of blocks) {
+        let trimmed = block.trim();
+        str += trimmed;
+    }
+    return str;
+}
 
-async function main() {
+
+
+
+async function getRawStringBlocksFromFileName(file: string) : Promise<string[]> {
     var fft = new FFT(fftSize, 44100);
-    // Load the wav file we have, and convert it to a Float32Array
-    const file = 'tests/assets/1.wav'
     const buffer = readFileSync(file);
     let wav = new WaveFile(buffer)
     wav.toBitDepth('32f'); // Pipeline expects input as a Float32Array
@@ -167,7 +177,6 @@ async function main() {
         nFreqs});
 
     const startMsec = demodulator.findStartMsec(spectra);
-    console.log(startMsec);
     if (startMsec == -1) {
         console.log("No message found.")
         console.log("No Start-Of-Message sequence detected. Cannot decode transmission.");
@@ -180,19 +189,18 @@ async function main() {
     const recLenMsec = Math.round(nSamples / sampleRate * 1000);
     let results = [];
     demodulateSome();
-    console.log(results)
 
     function demodulateSome() {
         for (let tc = 0; tc < tonesPerIter; ++tc) {
         const msec = startMsec + tonePos * demodulator.toneLenMsec;
         if (msec + 200 > recLenMsec) {
-            results.push(decodeTones(startMsec, null, tones));
+            results.push(decodeTones(tones));
             return;
         }
         const tone = demodulator.detecToneAt(spectra, msec);
         tones.push(tone);
         if (doesEndInEOM(tones, demodulator.symFreqs.length - 1)) {
-            results.push(decodeTones(startMsec, msec, tones));
+            results.push(decodeTones(tones));
             return;
         }
         ++tonePos;
@@ -344,18 +352,9 @@ function getBins(freq, sampleRate, fftSize, multiple = false) {
     else return -1;
   }
 
-main()
 
 
-function decodeTones(startMsec, endMsec, tones) {
-    const startSecStr = (startMsec / 1000).toFixed(2);
-    if (!endMsec) {
-      console.log(`<p>Start of message: ${startSecStr}<br/>No End-Of-Message sequence detected</p>`);
-    }
-    else {
-      const endSecStr = (endMsec / 1000).toFixed(2);
-      console.log(`<p>Start of message: ${startSecStr}<br/>End of message: ${endSecStr}</p>`);
-    }
+function decodeTones(tones) {
     // Display tones
     let tonesStr = "";
     for (const t of tones) {
@@ -387,13 +386,11 @@ function decodeTones(startMsec, endMsec, tones) {
 
       blocksHtml += "\nCRC: 0x" + block.crc.toString(16).padStart(2, "0") + "\n\n";
     }
-    console.log(blocksHtml);
 
     if (!decoder.valid) {
       console.log("Message cannot be reconstructed: invalid CRC in one or more blocks.");
       return;
     }
-    console.log("Message successfully decoded.");
     return decoder.ascii;
   }
 
@@ -464,5 +461,4 @@ function getToneBits(tone) {
     return res;
   }
 
-  // Export the main function.
-    export { main };
+    export { getRawStringBlocksFromFileName, getStringFromFileName };
