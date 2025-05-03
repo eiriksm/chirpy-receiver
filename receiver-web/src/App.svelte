@@ -4,6 +4,6 @@
 
 <main>
   <h1>Test Decoder</h1>
-  <TestDecoder filename="assets/1.wav"/>
+  <TestDecoder filename="sound_assets/1.wav"/>
   <p>Test decoder for the receiver web app
 </main>
