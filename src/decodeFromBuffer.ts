@@ -2,7 +2,7 @@ import { getRawStringBlocksFromChunks } from './decodeFromChunks';
 
 async function getRawStringBlocksFromBuffer(buffer: ArrayBuffer) : Promise<string[]> {
   return new Promise((resolve, reject) => {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const audioCtx = new window.AudioContext();
     audioCtx.decodeAudioData(buffer, async (audioBuffer) => {
         const data = audioBuffer.getChannelData(0);
         let chunks = [];
