@@ -37,7 +37,7 @@ async function getRawStringBlocksFromFileName(file: string) : Promise<string[]> 
         chunks.push(chunk);
         pos += chunkSize;
     }
-    const nSamples : Number = data.length;
+    const nSamples : number = data.length;
     return await getRawStringBlocksFromChunks(chunks, nSamples);
 }
 

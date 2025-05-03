@@ -10,7 +10,7 @@ const freqStep = 250;
 const nFreqs = 9;
 
 
-function getRawStringBlocksFromChunks(chunks: Array<any>, nSamples: Number) : string[] {
+function getRawStringBlocksFromChunks(chunks: Array<any>, nSamples: number) : string[] {
     var fft = new FFT(fftSize, 44100);
     let dataOver = false;
     let chunkIx = 0, posInChunk = 0;
