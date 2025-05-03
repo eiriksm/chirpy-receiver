@@ -10,10 +10,10 @@
   };
 </script>
 
-<p>
+<div>
   { props.filename }
   <button onclick={handleClick}>
     Decode
   </button>
   <pre class="data">{ data }</pre>
-</p>
+</div>
