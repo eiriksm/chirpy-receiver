@@ -83,8 +83,8 @@ jobs:
         run: npm ci
 
       - name: Install dependencies for web
-        run:
-          cd web
+        run: |
+          cd receiver-web
           npm ci
           npm run build
           cd ..
