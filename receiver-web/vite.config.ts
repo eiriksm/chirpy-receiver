@@ -6,5 +6,6 @@ export default defineConfig({
   plugins: [svelte()],
   build: {
     sourcemap: true,
+    minify: false,
   }
 })
