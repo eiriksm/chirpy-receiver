@@ -7,8 +7,12 @@
     const response = await fetch(props.filename);
     const buffer = await response.arrayBuffer();
     data = 'decoding'
+    try {
     const decodedString = await getStringFromBuffer(buffer);
     data = decodedString;
+} catch (err) {
+  data err.message
+}
   };
 </script>
 
