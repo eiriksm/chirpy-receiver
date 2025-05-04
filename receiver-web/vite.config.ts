@@ -7,5 +7,11 @@ export default defineConfig({
   build: {
     sourcemap: true,
     minify: false,
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        test: resolve(__dirname, 'test.html'),
+      },
+    },
   }
 })
