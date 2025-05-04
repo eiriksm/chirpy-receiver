@@ -1,7 +1,6 @@
 {
   "scripts": {
-    "start": "echo hello",
-    "test": "echo todo",
+    "start": "python3 -m http.server 3000",
     "lint": "echo todo",
     "type-check": "npx tsc --noEmit *.ts src/*.ts && npm run check-exports",
     "unit": "./node_modules/.bin/jest *.test.ts",
