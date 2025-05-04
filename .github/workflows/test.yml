@@ -82,6 +82,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install dependencies for web
+        run:
+          cd web
+          npm ci
+          npm run build
+          cd ..
+
       - name: Run cypress tests
         uses: cypress-io/github-action@v6
         with:
