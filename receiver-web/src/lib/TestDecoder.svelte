@@ -1,10 +1,12 @@
 <script lang="ts">
   import { getStringFromBuffer } from '../../../src/decodeFromBuffer';
   let props = $props();
-  let data;
+  let data = 'none';
   const handleClick = async () => {
+    data = 'fetch'
     const response = await fetch(props.filename);
     const buffer = await response.arrayBuffer();
+    data = 'decoding'
     const decodedString = await getStringFromBuffer(buffer);
     data = decodedString;
   };
