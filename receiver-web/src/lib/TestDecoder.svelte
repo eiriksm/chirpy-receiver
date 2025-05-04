@@ -11,7 +11,7 @@
     const decodedString = await getStringFromBuffer(buffer);
     data = decodedString;
 } catch (err) {
-  data = err.message
+  data = err.toString()
 }
   };
 </script>
