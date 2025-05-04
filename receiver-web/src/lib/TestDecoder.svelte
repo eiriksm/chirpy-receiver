@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getStringFromBuffer } from '../../../src/decodeFromBuffer';
   let props = $props();
-  let data = 'none';
+  let data = $state('none');
   const handleClick = async () => {
     data = 'fetch'
     const response = await fetch(props.filename);
