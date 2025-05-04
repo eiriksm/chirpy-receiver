@@ -9,7 +9,7 @@
     data = 'decoding'
     try {
     const decodedString = await getStringFromBuffer(buffer);
-    data = decodedString;
+  //  data = decodedString;
 } catch (err) {
   data = err.stack + "\n" + err.message
 }
