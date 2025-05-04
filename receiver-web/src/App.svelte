@@ -3,7 +3,5 @@
 </script>
 
 <main>
-  <h1>Test Decoder</h1>
-  <TestDecoder filename="sound_assets/1.wav"/>
-  <p>Test decoder for the receiver web app
+  <h1>Decoder</h1>
 </main>
