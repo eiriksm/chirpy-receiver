@@ -84,6 +84,7 @@ jobs:
 
       - name: Install dependencies for web
         run: |
+          ln -s receiver-web/dist/assets .
           cd receiver-web
           npm ci
           npm run build
