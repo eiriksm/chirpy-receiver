@@ -1,7 +1,8 @@
 <script lang="ts">
-  import TestDecoder from './lib/TestDecoder.svelte';
+  import Decoder from './lib/AudioDecoder.svelte';
 </script>
 
-<main>
+<main class="bg-black">
   <h1>Decoder</h1>
+  <Decoder filename="test.mp3" />
 </main>
