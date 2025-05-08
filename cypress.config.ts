@@ -1,7 +1,9 @@
+
+
 export default {
   e2e: {
     setupNodeEvents(on, config) {
-      on('before:browser:launch', (browser = {}, launchOptions) => {
+      on('before:browser:launch', (browser: any = {}, launchOptions) => {
         if (browser.family === 'chromium') {
           launchOptions.args.push('--no-sandbox')
           launchOptions.args.push('--allow-file-access-from-files')
