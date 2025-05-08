@@ -1,11 +1,143 @@
 <script lang="ts">
-    console.log('AudioDecoder.svelte');
+  import { getStringFromBuffer } from '../../../src/decodeFromBuffer';
+
+let permissionGranted = $state(false)
+let loading = $state(false)
+let isRecording = $state(false)
+let recordingAvailable = $state(false)
+let recordingDuration = $state(0)
+let decodedMessage: string | null = $state(null)
+let isDecoding = $state(false)
+let randomBars = $state(Array.from({ length: 12 }, () => Math.random() * 100))
+
+let mediaRecorderRef: MediaRecorder | null = null
+let audioChunks: Blob[] = [];
+let audioBlob: Blob | null = null
+let audioUrl: string | null = null
+let audioRef: HTMLAudioElement | null = null;
+let recordingStartTime: number | null = null
+let durationInterval: NodeJS.Timeout | null = null;
+let audioCtx: AudioContext | null = null
+let stream: MediaStream | null = null;
+let source: MediaStreamAudioSourceNode | null = null;
+let gain: GainNode | null = null;
+let scriptNode: ScriptProcessorNode | null = null;
+let chunks: Array<any> = [];
+let nSamples: number = 0;
+let sampleRate: number = 0;
+
+
+const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins}:${secs.toString().padStart(2, "0")}`
+}
+
+const stopRecording = () => {
+    if (mediaRecorderRef && isRecording) {
+      mediaRecorderRef.stop()
+      // Stop all tracks on the stream
+      mediaRecorderRef.stream.getTracks().forEach((track) => track.stop())
+
+      // Stop duration tracking
+      if (durationInterval) {
+        clearInterval(durationInterval)
+      }
+    }
+  }
+
+const requestMicrophonePermission = async () => {
+    loading = true
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      permissionGranted = true
+      return stream
+    } catch (err) {
+      console.error("Error accessing microphone:", err)
+      permissionGranted = false
+      return null
+    } finally {
+      loading = false
+    }
+  }
+
+ const startRecording = async () => {
+    audioChunks = []
+    decodedMessage = null
+
+    // Request microphone access if not already granted
+    if (!permissionGranted) {
+      stream = await requestMicrophonePermission()
+      if (!stream) return
+
+      initializeRecording(stream)
+    } else {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      initializeRecording(stream)
+    }
+  }
+
+
+  const initializeRecording = (stream: MediaStream) => {
+    audioCtx = new window.AudioContext()
+    const mediaRecorder = new MediaRecorder(stream)
+    source = audioCtx.createMediaStreamSource(stream)
+    chunks = [];
+    nSamples = 0;
+    sampleRate = source.context.sampleRate;
+
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        audioChunks.push(event.data);
+      }
+    }
+
+    mediaRecorder.onstop = async () => {
+      const audioBlob = new Blob(audioChunks, { type: "audio/wav" })
+      console.log(audioBlob)
+      const buffer = await audioBlob.arrayBuffer()
+      audioCtx = null;
+      const url = window.URL.createObjectURL(audioBlob);
+      // Create an A element to download it.
+      const a = document.createElement('a');
+      a.style.display = 'block';
+      a.href = url;
+      a.download = 'chirp.wav';
+      //a.click();
+      recordingAvailable = true
+      isRecording = false
+      decodedMessage = null
+      isDecoding = true
+      const decodedString = await getStringFromBuffer(buffer);
+      isDecoding = false
+      decodedMessage = decodedString
+    }
+
+    // Start tracking duration
+    recordingStartTime = Date.now()
+    recordingDuration = 0
+
+    if (durationInterval) {
+      clearInterval(durationInterval)
+    }
+
+    durationInterval = setInterval(() => {
+      if (recordingStartTime) {
+        const duration = Math.floor((Date.now() - recordingStartTime) / 1000)
+        recordingDuration = duration
+        randomBars  = Array.from({ length: 12 }, () => Math.random() * 100)
+      }
+    }, 1000)
+
+    mediaRecorderRef = mediaRecorder
+    mediaRecorder.start()
+    isRecording = true
+  }
+
 </script>
 
 <div
-    class="w-full max-w-md mx-auto border-2 border-cyan-500 bg-slate-900 text-cyan-50 shadow-lg shadow-cyan-500/20"
-    data-v0-t="card"
->
+    class="w-full max-w-md mx-auto border-2 border-cyan-500 bg-slate-900 text-cyan-50 shadow-lg shadow-cyan-500/20 audio-decoder">
     <div class="p-6">
         <div class="flex flex-col items-center gap-6">
             <!-- Clock Rate Section -->
@@ -124,72 +256,104 @@
                 </div>
             </div>
 
-            <!-- Awaiting Watch Beeps Section -->
             <div class="w-full relative">
-                <div class="text-center mb-2 font-mono text-xs tracking-wider text-cyan-400 uppercase">
-                    AWAITING WATCH BEEPS
+              <!-- Header -->
+              <div class="text-center mb-2 font-mono text-xs tracking-wider text-cyan-400 uppercase">
+                {#if isRecording}
+                  CAPTURING CHIRPY SIGNAL
+                {:else if recordingAvailable}
+                  CHIRPY SIGNAL ANALYSIS
+                {:else}
+                  AWAITING WATCH BEEPS
+                {/if}
+              </div>
+
+              <!-- Signal box -->
+              <div class="w-full h-32 bg-slate-800 rounded-md border border-cyan-600 flex items-center justify-center overflow-hidden relative">
+
+                <!-- Grid background -->
+                <div class="absolute inset-0 grid grid-cols-12 grid-rows-6 opacity-20 pointer-events-none">
+                  {#each Array(72) as _, i}
+                    <div class="border-[0.5px] border-cyan-500/30"></div>
+                  {/each}
                 </div>
-                <div
-                    class="w-full h-32 bg-slate-800 border border-cyan-600 flex items-center justify-center overflow-hidden relative"
-                >
-                    <div
-                        class="absolute inset-0 grid grid-cols-12 grid-rows-6 opacity-20 pointer-events-none"
-                    >
-                        <div class="border-[0.5px] border-cyan-500/30"></div>
-                        <!-- Repeat grid lines as needed -->
+
+                <!-- Content states -->
+                {#if isRecording}
+                  <div class="flex flex-col items-center z-10">
+                    <!-- Audio visualizer -->
+                    <div class="flex items-end h-12 gap-[2px] mb-2">
+                      {#each randomBars as height, index}
+                        <div
+                          class="w-2 bg-cyan-400 rounded-sm animate-pulse"
+                          style="height: {height}%; animation-delay: {index * 0.1}s;"
+                        ></div>
+                      {/each}
                     </div>
-                    <div class="text-sm text-cyan-300 font-mono flex flex-col items-center">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            class="lucide lucide-waves h-6 w-6 mb-2 opacity-50"
-                        >
-                            <path
-                                d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"
-                            ></path>
-                            <path
-                                d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"
-                            ></path>
-                            <path
-                                d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"
-                            ></path>
-                        </svg>
-                        <span>NO CHIRPY SIGNALS DETECTED</span>
+                    <div class="font-mono text-xs text-cyan-300">
+                      SIGNAL TIME: {formatDuration(recordingDuration)}
                     </div>
-                </div>
+                  </div>
+
+                {:else if recordingAvailable}
+                  <div class="flex flex-col items-center text-center z-10 px-4 w-full">
+                    <div class="font-mono text-xs text-cyan-300 mb-2">
+                      SIGNAL LENGTH: {formatDuration(recordingDuration)}
+                    </div>
+
+                    {#if isDecoding}
+                      <div class="animate-pulse flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-watch h-4 w-4 text-cyan-400"><circle cx="12" cy="12" r="6"></circle><polyline points="12 10 12 12 13 13"></polyline><path d="m16.13 7.66-.81-4.05a2 2 0 0 0-2-1.61h-2.68a2 2 0 0 0-2 1.61l-.78 4.05"></path><path d="m7.88 16.36.8 4a2 2 0 0 0 2 1.61h2.72a2 2 0 0 0 2-1.61l.81-4.05"></path></svg>
+                        <span class="text-cyan-400 font-mono text-sm">DECODING CHIRPY SIGNAL...</span>
+                      </div>
+                    {:else if decodedMessage}
+                      <div class="font-mono text-xs bg-slate-700/50 p-2 rounded border border-cyan-500/50 w-full">
+                        <div class="text-cyan-400 mb-1 flex items-center gap-1">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-watch h-4 w-4 text-cyan-400"><circle cx="12" cy="12" r="6"></circle><polyline points="12 10 12 12 13 13"></polyline><path d="m16.13 7.66-.81-4.05a2 2 0 0 0-2-1.61h-2.68a2 2 0 0 0-2 1.61l-.78 4.05"></path><path d="m7.88 16.36.8 4a2 2 0 0 0 2 1.61h2.72a2 2 0 0 0 2-1.61l.81-4.05"></path></svg>
+                          <span>DECODED MESSAGE:</span>
+                        </div>
+                        <div class="text-cyan-100 font-bold tracking-wide actual-decoded-message">
+                          {decodedMessage}
+                        </div>
+                      </div>
+                    {/if}
+                  </div>
+
+                {:else}
+                  <div class="text-sm text-cyan-300 font-mono flex flex-col items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-waves h-6 w-6 mb-2 opacity-50"><path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"></path><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"></path><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"></path></svg>
+                    <span>NO CHIRPY SIGNALS DETECTED</span>
+                  </div>
+                {/if}
+              </div>
             </div>
 
             <!-- Capture Beeps Button -->
             <div class="flex gap-4 flex-wrap justify-center">
-                <button
-                    class="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white border border-cyan-400"
-                    aria-label="Start recording"
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        class="lucide lucide-mic h-4 w-4 mr-2"
-                    >
-                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
-                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                        <line x1="12" x2="12" y1="19" y2="22"></line>
-                    </svg>
-                    CAPTURE BEEPS
-                </button>
+              {#if loading}
+              <button disabled class="bg-slate-700 text-cyan-100 flex items-center px-4 py-2 rounded">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-loader-circle h-4 w-4 mr-2 animate-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>
+                INITIALIZING
+              </button>
+              {:else if isRecording}
+              <button
+                onclick={stopRecording}
+                aria-label="Stop recording"
+                class="stop-record bg-red-600 hover:bg-red-700 text-white border border-red-400 flex items-center px-4 py-2 rounded"
+              >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square h-4 w-4 mr-2"><rect width="18" height="18" x="3" y="3" rx="2"></rect></svg>
+                STOP RECORDING
+              </button>
+              {:else}
+              <button
+                onclick={startRecording}
+                aria-label="Start recording"
+                class="start-record bg-cyan-600 hover:bg-cyan-700 text-white border border-cyan-400 flex items-center px-4 py-2 rounded"
+              >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mic h-4 w-4 mr-2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" x2="12" y1="19" y2="22"></line></svg>
+                CAPTURE BEEPS
+              </button>
+              {/if}
             </div>
         </div>
     </div>
