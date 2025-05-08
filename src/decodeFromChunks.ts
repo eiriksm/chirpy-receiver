@@ -57,27 +57,27 @@ function getRawStringBlocksFromChunks(chunks: Array<any>, nSamples: number) : st
         alert("No Start-Of-Message sequence detected. Cannot decode transmission.");
         return [];
     }
-    var tones = [];
+    var tones: Array<number> = [];
     let tonePos = 0;
     const tonesPerIter = 500;
     const recLenMsec = Math.round(nSamples / sampleRate * 1000);
-    let results = [];
+    let results: Array<string> = [];
     demodulateSome();
 
     function demodulateSome() {
         for (let tc = 0; tc < tonesPerIter; ++tc) {
-        const msec = startMsec + tonePos * demodulator.toneLenMsec;
-        if (msec + 200 > recLenMsec) {
-            results.push(decodeTones(tones));
-            return;
-        }
-        const tone = demodulator.detecToneAt(spectra, msec);
-        tones.push(tone);
-        if (doesEndInEOM(tones, demodulator.symFreqs.length - 1)) {
-            results.push(decodeTones(tones));
-            return;
-        }
-        ++tonePos;
+            const msec = startMsec + tonePos * demodulator.toneLenMsec;
+            if (msec + 200 > recLenMsec) {
+                results.push(decodeTones(tones));
+                return;
+            }
+            const tone = demodulator.detecToneAt(spectra, msec);
+            tones.push(tone);
+            if (doesEndInEOM(tones, demodulator.symFreqs.length - 1)) {
+                results.push(decodeTones(tones));
+                return;
+            }
+            ++tonePos;
         }
         demodulateSome();
     }

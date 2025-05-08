@@ -32,7 +32,7 @@ class Demodulator {
         this.stencils.push(new ToneStencil(freq, sampleRate, fftSize));
     }
 
-    detecToneAt(spectra, msec) {
+    detecToneAt(spectra, msec) : number{
       const ixAt = Math.round(msec / this.sampleLenMsec);
       const tone0 = detectTone(spectra[ixAt-1], this.stencils);
       const tone1 = detectTone(spectra[ixAt], this.stencils);
@@ -42,30 +42,44 @@ class Demodulator {
       return -1;
     }
 
-    findStartMsec(spectra) {
+    findStartMsec(spectra: Array<Float32Array>) : number {
 
-      let firstMatchIx = -1, lastMatchIx = -1;
+      let firstMatchIx: number = -1
+      let lastMatchIx: number = -1;
       for (let ix0 = 0; ix0 < spectra.length; ++ix0) {
         const msec0 = ix0 * this.sampleLenMsec;
         const ix1 = Math.round((msec0 + this.toneLenMsec) / this.sampleLenMsec);
         const ix2 = Math.round((msec0 + 2 * this.toneLenMsec) / this.sampleLenMsec);
         const ix3 = Math.round((msec0 + 3 * this.toneLenMsec) / this.sampleLenMsec);
-        if (ix3 > spectra.length - 1) break;
+        if (ix3 > spectra.length - 1) {
+            break;
+        }
         const tone0 = detectTone(spectra[ix0], this.stencils);
         const tone1 = detectTone(spectra[ix1], this.stencils);
         const tone2 = detectTone(spectra[ix2], this.stencils);
         const tone3 = detectTone(spectra[ix3], this.stencils);
-        if (tone0 == this.symFreqs.length - 1 && tone1 == 0 &&
-            tone2 == this.symFreqs.length - 1 && tone3 == 0) {
+        if (tone0 == this.symFreqs.length - 1 && tone1 == 0 && tone2 == this.symFreqs.length - 1 && tone3 == 0) {
+          // Reset first match if too much time has passed. Let's say 100ms
+          if (firstMatchIx != -1 && ix0 - firstMatchIx > 100) {
+                console.log("reset firstMatchIx");
+                firstMatchIx = -1;
+                lastMatchIx = -1;
+         }
           if (firstMatchIx == -1) {
-            firstMatchIx = lastMatchIx = ix0;
+            firstMatchIx = ix0;
           }
-          else lastMatchIx = ix0;
+          else {
+            lastMatchIx = ix0;
+          }
         }
-        else if (firstMatchIx != -1) break;
+        else if (firstMatchIx != -1 && lastMatchIx != -1) {
+            break;
+        }
       }
 
-      if (firstMatchIx == -1) return -1;
+      if (firstMatchIx == -1) {
+        return -1;
+      }
       const midMatchIx = Math.round((firstMatchIx + lastMatchIx) / 2);
       return Math.floor(midMatchIx * this.sampleLenMsec);
     }
