@@ -95,6 +95,7 @@ jobs:
         with:
           start: npm start
           wait-on: http://localhost:3000
+          browser: chrome
         env:
           CYPRESS_baseUrl: http://localhost:3000
 
