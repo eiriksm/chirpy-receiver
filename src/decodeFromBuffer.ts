@@ -6,7 +6,6 @@ async function getRawStringBlocksFromBuffer(buffer: ArrayBuffer) : Promise<strin
     audioCtx.decodeAudioData(buffer, async (audioBuffer) => {
         const data = audioBuffer.getChannelData(0);
         let chunks = [];
-        const sampleRate = audioBuffer.sampleRate;
         const nSamples = data.length;
         let pos = 0;
         while (pos < data.length) {
