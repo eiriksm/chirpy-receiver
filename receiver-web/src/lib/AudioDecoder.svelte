@@ -1,6 +1,5 @@
 <script lang="ts">
   import { getStringFromBuffer } from '../../../src/decodeFromBuffer';
-  import { WAVEncoder } from '../../../src/WavEncoder';
 
 let permissionGranted = $state(false)
 let loading = $state(false)
@@ -23,7 +22,6 @@ let stream: MediaStream | null = null;
 let source: MediaStreamAudioSourceNode | null = null;
 let gain: GainNode | null = null;
 let scriptNode: ScriptProcessorNode | null = null;
-let wavEncoder: WAVEncoder | null = null;
 let chunks: Array<any> = [];
 let nSamples: number = 0;
 let sampleRate: number = 0;
@@ -84,7 +82,6 @@ const requestMicrophonePermission = async () => {
     audioCtx = new window.AudioContext()
     const mediaRecorder = new MediaRecorder(stream)
     source = audioCtx.createMediaStreamSource(stream)
-    wavEncoder = new WAVEncoder(audioCtx.sampleRate, 1);
     chunks = [];
     nSamples = 0;
     sampleRate = source.context.sampleRate;
