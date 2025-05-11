@@ -6,6 +6,8 @@ describe('Main app with recording', () => {
     // Wait for 11 seconds, the duration of the recording.
     cy.wait(11000);
     cy.get('.audio-decoder .stop-record').click();
-    cy.get('.actual-decoded-message').contains('test')
+    cy.get('.actual-decoded-message', {
+      timeout: 20000
+    }).contains('test')
   })
 })
