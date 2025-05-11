@@ -103,5 +103,5 @@ jobs:
         if: failure()
         with:
           name: screenshots
-          path: screenshots
+          path: cypress/screenshots
           if-no-files-found: ignore
