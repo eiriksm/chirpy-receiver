@@ -2,6 +2,7 @@
   import { getStringFromBuffer } from '../../../src/decodeFromBuffer';
   let props = $props();
   let data = $state('none');
+  let errorState = $state('');
   const handleClick = async () => {
     data = 'fetch'
     const response = await fetch(props.filename);
@@ -11,7 +12,7 @@
       const decodedString = await getStringFromBuffer(buffer);
       data = decodedString;
     } catch (err) {
-      data = err.stack + "\n" + err.message
+      errorState = err.stack + "\n" + err.message
     }
   };
 </script>
@@ -22,4 +23,5 @@
     Decode
   </button>
   <pre class="data">{ data }</pre>
+  <pre class="error">{ errorState }</pre>
 </div>
