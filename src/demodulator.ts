@@ -3,7 +3,7 @@ import { ToneStencil } from './toneStencil';
 class Demodulator {
     public sampleLenMsec;
     public bitSize;
-    public stencils;
+    public stencils: Array<ToneStencil>;
     public sampleRate;
     public fftSize;
     public toneRate;

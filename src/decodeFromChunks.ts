@@ -9,14 +9,13 @@ const baseFreq = 2500;
 const freqStep = 250;
 const nFreqs = 9;
 
-
 function getRawStringBlocksFromChunks(chunks: Array<any>, nSamples: number) : string[] {
     var fft = new FFT(fftSize, 44100);
     let dataOver = false;
     let chunkIx = 0, posInChunk = 0;
     const frame = new Float32Array(fftSize);
     const framesPerIter = 1000;
-    let spectra = [];
+    let spectra : Array<Float32Array> = [];
 
     // Process several FFT rounds
     while (!dataOver) {
@@ -94,45 +93,14 @@ function getRawStringBlocksFromChunks(chunks: Array<any>, nSamples: number) : st
 
 
 
-
-  function decodeTones(tones) {
-    // Display tones
-    let tonesStr = "";
-    for (const t of tones) {
-      if (tonesStr != "") tonesStr += " ";
-      tonesStr += t;
-    }
-
+  function decodeTones(tones: Array<number>) {
     // Decode, and display decoded blocks
     let decoder = new Decoder(tones);
-    let blocksHtml = "";
-    for (let i = 0; i < decoder.blocks.length; ++i) {
-      const block = decoder.blocks[i];
-      if (block.valid) blocksHtml += `<span class='valid'>Block ${i} VALID</span>`;
-      else blocksHtml += `<span class='invalid'>Block ${i} INVALID</span>`;
-      blocksHtml += "\nTones:";
-      for (let j = block.startTonePos; j < block.startTonePos + block.nTones; ++j)
-        blocksHtml += " " + tones[j];
-      blocksHtml += "\nBytes:";
-      let blocksAscii = "";
-      for (const b of block.bytes) {
-        let hex = "0x" + b.toString(16).padStart(2, "0");
-        blocksHtml += " " + hex;
-        const hexObj = parseInt(hex, 16)
-        blocksAscii += String.fromCharCode(hexObj)
-      }
-
-      blocksHtml += "\nASCII:";
-      blocksHtml += blocksAscii;
-
-      blocksHtml += "\nCRC: 0x" + block.crc.toString(16).padStart(2, "0") + "\n\n";
-    }
-
     if (!decoder.valid) {
-      console.log("Message cannot be reconstructed: invalid CRC in one or more blocks.");
-      return;
+      throw new Error("Message cannot be reconstructed: invalid CRC in one or more blocks.");
     }
-    return decoder.ascii;
+    const utf8Result = decoder.getUtf8();
+    return utf8Result;
   }
 
   export { getRawStringBlocksFromChunks }

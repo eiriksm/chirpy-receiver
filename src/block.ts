@@ -5,6 +5,7 @@ class Block {
     public ascii;
     public crc;
     public valid;
+    private utf8;
     constructor(startTonePos, nTones, bytes, crc) {
       this.startTonePos = startTonePos;
       this.nTones = nTones;
@@ -12,6 +13,20 @@ class Block {
       this.ascii = getAscii(bytes);
       this.crc = crc;
       this.valid = crc == getCRC8(bytes);
+      this.utf8 = this.decodeUtf8(bytes);
+    }
+    decodeUtf8(bytes: Array<number>) {
+      let str = ""
+      try {
+        const decoder = new TextDecoder("utf-8");
+        str = decoder.decode(new Uint8Array(bytes));
+      } catch (e) {
+        console.log("Error decoding UTF-8: " + e);
+      }
+      return str;
+    }
+    getUtf8() {
+      return this.utf8;
     }
 }
 

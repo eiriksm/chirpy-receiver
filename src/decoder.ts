@@ -16,8 +16,8 @@ class Decoder {
     public bytes;
     public valid;
     public ascii;
-    public blocks;
-    constructor(tones) {
+    public blocks: Array<Block>;
+    constructor(tones: Array<number>) {
       this.tones = tones;
       this.blocks = decode(tones);
       this.bytes = catBytes(this.blocks);
@@ -27,11 +27,18 @@ class Decoder {
         if (!block.valid)
           this.valid = false;
     }
+    public getUtf8() {
+      let str = "";
+      for (const block of this.blocks) {
+        str += block.getUtf8();
+      }
+      return str;
+    }
   }
 
 
-function decode(tones) {
-    const blocks = [];
+function decode(tones: Array<number>) {
+    const blocks : Array<Block> = [];
     // Single-byte transmission is 14 tones
     if (tones.length < 14) return blocks;
     // Start sequence
@@ -52,10 +59,11 @@ function decode(tones) {
 
 
 
-function decodeBlock(tones) {
-    const bits = [];
-    for (let i = 0; i < tones.length - 5; ++i)
-      bits.push(...getToneBits(tones[i]));
+function decodeBlock(tones: Array<number>) {
+    const bits : Array<number> = [];
+    for (let i = 0; i < tones.length - 5; ++i) {
+        bits.push(...getToneBits(tones[i]));
+    }
     const crcBits = [
       ...getToneBits(tones[tones.length-4]),
       ...getToneBits(tones[tones.length-3]),
@@ -92,7 +100,7 @@ function catAscii(blocks) {
     return str;
 }
 
-function getBlockEndIx(tones, startIx) {
+function getBlockEndIx(tones: Array<number>, startIx: number) {
     // Find next 8NNN8
     for (let i = startIx + 4; i < tones.length; ++i) {
       if (tones[i] == 8 && tones[i -4] == 8) {
