@@ -1,6 +1,6 @@
 import { getRawStringBlocksFromChunks } from './decodeFromChunks';
 
-async function getRawStringBlocksFromBuffer(buffer: ArrayBuffer) : Promise<string[]> {
+async function getRawStringBlocksFromBuffer(buffer: ArrayBuffer, clockRate: number = 32) : Promise<string[]> {
   return new Promise((resolve, reject) => {
     const audioCtx = new window.AudioContext();
     audioCtx.decodeAudioData(buffer, async (audioBuffer) => {
@@ -17,14 +17,18 @@ async function getRawStringBlocksFromBuffer(buffer: ArrayBuffer) : Promise<strin
           chunks.push(chunk);
           pos += chunkSize;
         }
-        const blocks = await getRawStringBlocksFromChunks(chunks, nSamples);
-        resolve(blocks);
+        try {
+          const blocks = await getRawStringBlocksFromChunks(chunks, nSamples, clockRate);
+          resolve(blocks);
+        } catch (error) {
+          reject(error);
+        }
     })
   })
 }
 
-async function getStringFromBuffer(buffer: ArrayBuffer) : Promise<string> {
-  const blocks = await getRawStringBlocksFromBuffer(buffer);
+async function getStringFromBuffer(buffer: ArrayBuffer, clockRate: number = 32) : Promise<string> {
+  const blocks = await getRawStringBlocksFromBuffer(buffer, clockRate);
   let str = "";
   for (const block of blocks) {
       let trimmed = block.trim();

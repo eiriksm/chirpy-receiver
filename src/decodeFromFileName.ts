@@ -8,8 +8,8 @@ const sampleRate = 44100;
 
 
 
-async function getStringFromFileName(file: string) : Promise<string> {
-    const blocks = await getRawStringBlocksFromFileName(file);
+async function getStringFromFileName(file: string, clockRate: number = 32) : Promise<string> {
+    const blocks = await getRawStringBlocksFromFileName(file, clockRate);
     let str = "";
     for (const block of blocks) {
         let trimmed = block.trim();
@@ -18,7 +18,7 @@ async function getStringFromFileName(file: string) : Promise<string> {
     return str;
 }
 
-async function getRawStringBlocksFromFileName(file: string) : Promise<string[]> {
+async function getRawStringBlocksFromFileName(file: string, clockRate: number = 32) : Promise<string[]> {
     const buffer = readFileSync(file);
     let wav = new WaveFile(buffer)
     wav.toBitDepth('32f'); // Pipeline expects input as a Float32Array
@@ -38,7 +38,7 @@ async function getRawStringBlocksFromFileName(file: string) : Promise<string[]> 
         pos += chunkSize;
     }
     const nSamples : number = data.length;
-    return await getRawStringBlocksFromChunks(chunks, nSamples);
+    return await getRawStringBlocksFromChunks(chunks, nSamples, clockRate);
 }
 
 export { getRawStringBlocksFromFileName, getStringFromFileName };
