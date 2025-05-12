@@ -114,6 +114,14 @@ function detectTone(spectrum, stencils) {
     }
   }
 
+  // Sum up other values
+  let restSum = 0;
+  for (let i = 0; i < v1.length; ++i) {
+    if (i != maxIx) {
+      restSum += v1[i];
+    }
+  }
+
   // Check if highest band is sufficiently stronger than others
   const ratio = maxVal / restSum;
   if (ratio >= 0.1) return maxIx;
