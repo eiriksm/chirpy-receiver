@@ -1,4 +1,4 @@
-import { getRawStringBlocksFromFileName, getStringFromFileName } from "./src/decodeFromFileName"
+import { getRawStringBlocksFromFileName, getStringFromFileName } from "../src/decodeFromFileName"
 
 describe("main", () => {
     test('Should return the expected string blocks', async () => {
