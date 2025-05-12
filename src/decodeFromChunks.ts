@@ -100,4 +100,4 @@ function getRawStringBlocksFromChunks(chunks: Array<any>, nSamples: number, cloc
     return utf8Result;
   }
 
-  export { getRawStringBlocksFromChunks }
+  export { getRawStringBlocksFromChunks, decodeTones }
