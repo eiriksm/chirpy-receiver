@@ -3,13 +3,14 @@
   let props = $props();
   let data = $state('none');
   let errorState = $state('');
+  let clockRate = props.clockRate || 32;
   const handleClick = async () => {
     data = 'fetch'
     const response = await fetch(props.filename);
     const buffer = await response.arrayBuffer();
     data = 'decoding'
     try {
-      const decodedString = await getStringFromBuffer(buffer);
+      const decodedString = await getStringFromBuffer(buffer, clockRate);
       data = decodedString;
     } catch (err) {
       errorState = err.stack + "\n" + err.message

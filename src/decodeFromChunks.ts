@@ -3,13 +3,12 @@ import { Demodulator } from "./demodulator";
 import { Decoder } from "./decoder";
 const fftSize = 512;
 const sampleRate = 44100;
-const clockRate = 32;
-const toneRate = clockRate/3;
 const baseFreq = 2500;
 const freqStep = 250;
 const nFreqs = 9;
 
-function getRawStringBlocksFromChunks(chunks: Array<any>, nSamples: number) : string[] {
+function getRawStringBlocksFromChunks(chunks: Array<any>, nSamples: number, clockRate: number = 32) : string[] {
+    const toneRate = clockRate/3;
     var fft = new FFT(fftSize, 44100);
     let dataOver = false;
     let chunkIx = 0, posInChunk = 0;
