@@ -86,11 +86,9 @@ class Demodulator {
 
   }
 
-  var v1 = null;
   function detectTone(spectrum, stencils) {
 
-    if (!v1 || v1.length != stencils.length)
-      v1 = new Float32Array(stencils.length);
+    const v1 = new Float32Array(stencils.length);
 
     for (let i = 0; i < v1.length; ++i) v1[i] = 0;
 
@@ -119,7 +117,7 @@ class Demodulator {
     }
 
     // Check if highest band is sufficiently stronger than others
-    let ratio = maxVal / restSum;
+    const ratio = maxVal / restSum;
     if (ratio >= 0.1) return maxIx;
     else return -1;
   }
