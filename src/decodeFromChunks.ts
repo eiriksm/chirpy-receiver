@@ -51,9 +51,7 @@ function getRawStringBlocksFromChunks(chunks: Array<any>, nSamples: number, cloc
 
     const startMsec = demodulator.findStartMsec(spectra);
     if (startMsec == -1) {
-        alert("No message found.")
-        alert("No Start-Of-Message sequence detected. Cannot decode transmission.");
-        return [];
+        throw new Error("No start sequence found");
     }
     var tones: Array<number> = [];
     let tonePos = 0;
