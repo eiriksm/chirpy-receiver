@@ -24,10 +24,13 @@ async function getRawStringBlocksFromFileName(
 ): Promise<string[]> {
   const buffer = readFileSync(file);
   const wav = new WaveFile(buffer);
-  wav.toBitDepth("32f"); // Pipeline expects input as a Float32Array
+  wav.toBitDepth("32f");
   wav.toSampleRate(sampleRate);
-  const method = "getSamples";
-  const audioData: Array<Float64Array> = wav[method]();
+  // Here we are trying to trick the typescript compiler. It's gonna complain
+  // about the wav.getSamples() method not returning an array of Float64Array.
+  // In addition, if we pass a const to wav[method] it will do the same.
+  const methodSubject = "Samples";
+  const audioData: Array<Float64Array> = wav['get' + methodSubject]();
   const data = audioData[0];
   const chunks = [];
   let pos = 0;
