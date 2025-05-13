@@ -8,19 +8,18 @@ const freqStep = 250;
 const nFreqs = 9;
 
 function getRawStringBlocksFromChunks(
-  chunks: Array<any>,
+  chunks: Array<Float32Array>,
   nSamples: number,
   clockRate: number = 32,
 ): string[] {
-  debugger
   const toneRate = clockRate / 3;
-  var fft = new FFT(fftSize, 44100);
+  const fft = new FFT(fftSize, 44100);
   let dataOver = false;
   let chunkIx = 0,
     posInChunk = 0;
   const frame = new Float32Array(fftSize);
   const framesPerIter = 1000;
-  let spectra: Array<Float32Array> = [];
+  const spectra: Array<Float32Array> = [];
 
   // Process several FFT rounds
   while (!dataOver) {
@@ -41,8 +40,10 @@ function getRawStringBlocksFromChunks(
       if (dataOver) break;
       // Do FFT; save spectrum
       fft.forward(frame);
-      let s = new Float32Array(fft.spectrum.length);
-      for (let i = 0; i < s.length; ++i) s[i] = fft.spectrum[i];
+      const s = new Float32Array(fft.spectrum.length);
+      for (let i = 0; i < s.length; ++i) {
+        s[i] = fft.spectrum[i];
+      }
       spectra.push(s);
     }
   }
@@ -59,11 +60,11 @@ function getRawStringBlocksFromChunks(
   if (startMsec == -1) {
     throw new Error("No start sequence found");
   }
-  var tones: Array<number> = [];
+  const tones: Array<number> = [];
   let tonePos = 0;
   const tonesPerIter = 500;
   const recLenMsec = Math.round((nSamples / sampleRate) * 1000);
-  let results: Array<string> = [];
+  const results: Array<string> = [];
   demodulateSome();
 
   function demodulateSome() {
@@ -96,7 +97,7 @@ function getRawStringBlocksFromChunks(
 
 function decodeTones(tones: Array<number>) {
   // Decode, and display decoded blocks
-  let decoder = new Decoder(tones);
+  const decoder = new Decoder(tones);
   if (!decoder.valid) {
     throw new Error(
       "Message cannot be reconstructed: invalid CRC in one or more blocks.",
