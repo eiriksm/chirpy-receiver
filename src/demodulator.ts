@@ -12,8 +12,9 @@ class Demodulator {
 
   constructor({ sampleRate, fftSize, toneRate, baseFreq, freqStep, nFreqs }) {
     const bitSize = Math.log(nFreqs - 1) / Math.log(2);
-    if (bitSize != Math.round(bitSize))
+    if (bitSize != Math.round(bitSize)) {
       throw "nFreqs must be 2^x+1, e.g., 5, 9 or 17";
+    }
 
     this.bitSize = bitSize;
     this.sampleRate = sampleRate;
