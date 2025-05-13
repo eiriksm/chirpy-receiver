@@ -1,12 +1,12 @@
 {
   "scripts": {
     "start": "python3 -m http.server 3000",
-    "lint": "eslint src/demodulator.ts src/block.ts src/decodeFromBuffer.ts src/decodeFromChunks.ts",
+    "lint": "eslint src/demodulator.ts src/block.ts src/decodeFromBuffer.ts src/decodeFromChunks.ts src/decodeFromFileName.ts src/decoder.ts src/toneStencil.ts",
     "type-check": "npx tsc --noEmit *.ts src/*.ts && npm run check-exports",
     "unit": "./node_modules/.bin/jest tests/*.test.ts",
     "check-exports": "attw --pack .",
     "postinstall": "patch-package",
-    "prettier-check": "prettier --check src/demodulator.ts src/block.ts src/decodeFromBuffer.ts src/decodeFromChunks.ts"
+    "prettier-check": "prettier --check src/demodulator.ts src/block.ts src/decodeFromBuffer.ts src/decodeFromChunks.ts src/decodeFromFileName.ts src/decoder.ts src/toneStencil.ts"
   },
   "name": "chirpy-receiver",
   "version": "0.0.1",
