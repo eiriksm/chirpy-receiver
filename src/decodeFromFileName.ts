@@ -30,7 +30,7 @@ async function getRawStringBlocksFromFileName(
   // about the wav.getSamples() method not returning an array of Float64Array.
   // In addition, if we pass a const to wav[method] it will do the same.
   const methodSubject = "Samples";
-  const audioData: Array<Float64Array> = wav['get' + methodSubject]();
+  const audioData: Array<Float64Array> = wav["get" + methodSubject]();
   const data = audioData[0];
   const chunks = [];
   let pos = 0;
