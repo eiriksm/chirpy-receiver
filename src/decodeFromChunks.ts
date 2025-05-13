@@ -12,6 +12,9 @@ function getRawStringBlocksFromChunks(
   nSamples: number,
   clockRate: number = 32,
 ): string[] {
+  // This is clockRate / 3 because it corresponds to the
+  // tick_state->tick_compare = 3;
+  // in the chirpy demo face.
   const toneRate = clockRate / 3;
   const fft = new FFT(fftSize, 44100);
   let dataOver = false;
@@ -37,7 +40,9 @@ function getRawStringBlocksFromChunks(
         frame[i] = chunks[chunkIx][posInChunk];
         ++posInChunk;
       }
-      if (dataOver) break;
+      if (dataOver) {
+        break;
+      }
       // Do FFT; save spectrum
       fft.forward(frame);
       const s = new Float32Array(fft.spectrum.length);
@@ -65,34 +70,41 @@ function getRawStringBlocksFromChunks(
   const tonesPerIter = 500;
   const recLenMsec = Math.round((nSamples / sampleRate) * 1000);
   const results: Array<string> = [];
-  demodulateSome();
 
-  function demodulateSome() {
+  while (tonePos * demodulator.toneLenMsec + 200 <= recLenMsec) {
     for (let tc = 0; tc < tonesPerIter; ++tc) {
       const msec = startMsec + tonePos * demodulator.toneLenMsec;
+
       if (msec + 200 > recLenMsec) {
         results.push(decodeTones(tones));
-        return;
+        return results;
       }
+
       const tone = demodulator.detecToneAt(spectra, msec);
+      if (tone === -1) {
+        ++tonePos;
+        continue;
+      }
       tones.push(tone);
+
       if (doesEndInEOM(tones, demodulator.symFreqs.length - 1)) {
         results.push(decodeTones(tones));
-        return;
+        return results;
       }
+
       ++tonePos;
     }
-    demodulateSome();
   }
 
-  function doesEndInEOM(tones, signalToneIx) {
-    if (tones.length < 3) return false;
-    for (let i = 0; i < 3; ++i) {
-      if (tones[tones.length - i - 1] != signalToneIx) return false;
-    }
-    return true;
-  }
   return results;
+}
+
+function doesEndInEOM(tones: number[], signalToneIx: number): boolean {
+  if (tones.length < 3) return false;
+  for (let i = 0; i < 3; ++i) {
+    if (tones[tones.length - i - 1] !== signalToneIx) return false;
+  }
+  return true;
 }
 
 function decodeTones(tones: Array<number>) {
