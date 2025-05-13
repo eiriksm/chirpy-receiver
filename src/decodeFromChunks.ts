@@ -41,7 +41,7 @@ function getRawStringBlocksFromChunks(
         ++posInChunk;
       }
       if (dataOver) {
-        break
+        break;
       }
       // Do FFT; save spectrum
       fft.forward(frame);
@@ -98,7 +98,6 @@ function getRawStringBlocksFromChunks(
 
   return results;
 }
-
 
 function doesEndInEOM(tones: number[], signalToneIx: number): boolean {
   if (tones.length < 3) return false;
