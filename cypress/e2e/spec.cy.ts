@@ -11,4 +11,10 @@ describe('The shipped assets', () => {
     cy.get('.test-2 button').click()
     cy.contains('.test-2 pre.data', '🚀️').should('exist')
   })
+  it('Test 3 wav', () => {
+    cy.visit('/receiver-web/dist/test.html')
+    cy.contains('.test-3 pre.data', 'test').should('not.exist')
+    cy.get('.test-3 button').click()
+    cy.contains('.test-3 pre.data', 'ab').should('exist')
+  })
 })
