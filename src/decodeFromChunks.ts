@@ -65,38 +65,48 @@ function getRawStringBlocksFromChunks(
   if (startMsec == -1) {
     throw new Error("No start sequence found");
   }
-  const tones: Array<number> = [];
-  let tonePos = 0;
   const tonesPerIter = 500;
   const recLenMsec = Math.round((nSamples / sampleRate) * 1000);
-  const results: Array<string> = [];
+  const offsets = [0, -1, 1, -2, 2, -3, 3, -4, 4];
 
-  while (tonePos * demodulator.toneLenMsec + 200 <= recLenMsec) {
-    for (let tc = 0; tc < tonesPerIter; ++tc) {
-      const msec = startMsec + tonePos * demodulator.toneLenMsec;
+  for (let i = 0; i < offsets.length; ++i) {
+    const offset = offsets[i];
+    const results: string[] = [];
+    let tonePos = 0;
+    const tones: Array<number> = [];
+    try {
+      while (tonePos * demodulator.toneLenMsec + 200 <= recLenMsec) {
+        for (let tc = 0; tc < tonesPerIter; ++tc) {
+          const msec = startMsec + tonePos * demodulator.toneLenMsec + offset;
 
-      if (msec + 200 > recLenMsec) {
-        results.push(decodeTones(tones));
-        return results;
+          if (msec + 200 > recLenMsec) {
+            results.push(decodeTones(tones));
+            return results;
+          }
+
+          const tone = demodulator.detecToneAt(spectra, msec);
+          if (tone === -1) {
+            ++tonePos;
+            continue;
+          }
+          tones.push(tone);
+
+          if (doesEndInEOM(tones, demodulator.symFreqs.length - 1)) {
+            results.push(decodeTones(tones));
+            return results;
+          }
+
+          ++tonePos;
+        }
       }
-
-      const tone = demodulator.detecToneAt(spectra, msec);
-      if (tone === -1) {
-        ++tonePos;
-        continue;
-      }
-      tones.push(tone);
-
-      if (doesEndInEOM(tones, demodulator.symFreqs.length - 1)) {
-        results.push(decodeTones(tones));
-        return results;
-      }
-
-      ++tonePos;
+    } catch (e) {
+      console.error(e);
+      console.log("The tones were: " + tones.join(" "));
+      console.log("The offset was: " + offset);
     }
   }
 
-  return results;
+  throw new Error("No valid message found");
 }
 
 function doesEndInEOM(tones: number[], signalToneIx: number): boolean {

@@ -9,6 +9,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [svelte(), tailwindcss()],
+  publicDir: '../tests/assets',
   build: {
     sourcemap: true,
     minify: false,
