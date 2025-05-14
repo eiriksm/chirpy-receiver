@@ -67,27 +67,17 @@ function getRawStringBlocksFromChunks(
   }
   const tonesPerIter = 500;
   const recLenMsec = Math.round((nSamples / sampleRate) * 1000);
-  const offsets = [
-    0,
-    -1,
-    1,
-    -2,
-    2,
-    -3,
-    3,
-    -4,
-    4,
-  ]
+  const offsets = [0, -1, 1, -2, 2, -3, 3, -4, 4];
 
   for (let i = 0; i < offsets.length; ++i) {
     const offset = offsets[i];
-    let results: string[] = [];
+    const results: string[] = [];
     let tonePos = 0;
-    let tones: Array<number> = [];
+    const tones: Array<number> = [];
     try {
       while (tonePos * demodulator.toneLenMsec + 200 <= recLenMsec) {
         for (let tc = 0; tc < tonesPerIter; ++tc) {
-          const msec = startMsec + (tonePos * demodulator.toneLenMsec) + offset;
+          const msec = startMsec + tonePos * demodulator.toneLenMsec + offset;
 
           if (msec + 200 > recLenMsec) {
             results.push(decodeTones(tones));
@@ -110,6 +100,9 @@ function getRawStringBlocksFromChunks(
         }
       }
     } catch (e) {
+      console.error(e);
+      console.log("The tones were: " + tones.join(" "));
+      console.log("The offset was: " + offset);
     }
   }
 
