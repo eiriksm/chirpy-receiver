@@ -1,7 +1,7 @@
 {
   "scripts": {
     "start": "python3 -m http.server 3000",
-    "lint": "eslint src/* tests/*",
+    "lint": "eslint src/* tests/*.*",
     "type-check": "npx tsc --noEmit *.ts src/*.ts && npm run check-exports",
     "unit": "./node_modules/.bin/jest tests/*.test.ts",
     "check-exports": "attw --pack .",
