@@ -5,6 +5,8 @@ let permissionGranted = $state(false)
 let loading = $state(false)
 let isRecording = $state(false)
 let recordingAvailable = $state(false)
+let hasError = $state(false)
+let errorMessage = $state("")
 let recordingDuration = $state(0)
 let decodedMessage: string | null = $state(null)
 let isDecoding = $state(false)
@@ -25,7 +27,7 @@ let scriptNode: ScriptProcessorNode | null = null;
 let chunks: Array<any> = [];
 let nSamples: number = 0;
 let sampleRate: number = 0;
-
+let clockRate = 64;
 
 const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -62,6 +64,8 @@ const requestMicrophonePermission = async () => {
   }
 
  const startRecording = async () => {
+    hasError = false
+    errorMessage = ""
     audioChunks = []
     decodedMessage = null
 
@@ -108,9 +112,15 @@ const requestMicrophonePermission = async () => {
       isRecording = false
       decodedMessage = null
       isDecoding = true
-      const decodedString = await getStringFromBuffer(buffer);
+      try {
+        const decodedString = await getStringFromBuffer(buffer, clockRate);
+        decodedMessage = decodedString
+      } catch (error) {
+        console.error("Error during decoding:", error)
+        errorMessage = error.message
+        hasError = true
+      }
       isDecoding = false
-      decodedMessage = decodedString
     }
 
     // Start tracking duration
@@ -177,17 +187,20 @@ const requestMicrophonePermission = async () => {
                     <!-- Radio Option 32 -->
                     <div class="flex-1">
                         <button
+                            aria-label="32 hz clock rate"
                             type="button"
                             role="radio"
                             aria-checked="false"
                             data-state="unchecked"
                             value="32"
+                            onclick={() => clockRate = 32}
                             class="aspect-square h-4 w-4 border border-primary text-primary ring-offset-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 peer sr-only"
                             id="rate-32"
                             tabindex="-1"
                             data-radix-collection-item=""
                         ></button>
                         <label
+                        data-cy="rate-32"
                             class="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex flex-1 items-center justify-center px-3 py-1.5 text-xs font-mono cursor-pointer peer-data-[state=checked]:bg-cyan-600 peer-data-[state=checked]:text-white hover:bg-slate-700 transition-colors"
                             for="rate-32"
                         >
@@ -198,11 +211,13 @@ const requestMicrophonePermission = async () => {
                     <!-- Radio Option 64 -->
                     <div class="flex-1">
                         <button
+                            aria-label="64 hz clock rate"
                             type="button"
                             role="radio"
                             aria-checked="true"
                             data-state="checked"
                             value="64"
+                            onclick={() => clockRate = 64}
                             class="aspect-square h-4 w-4 border border-primary text-primary ring-offset-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 peer sr-only"
                             id="rate-64"
                             tabindex="-1"
@@ -236,10 +251,12 @@ const requestMicrophonePermission = async () => {
                     <!-- Radio Option 128 -->
                     <div class="flex-1">
                         <button
+                            aria-label="128 hz clock rate"
                             type="button"
                             role="radio"
                             aria-checked="false"
                             data-state="unchecked"
+                            onclick={() => clockRate = 128}
                             value="128"
                             class="aspect-square h-4 w-4 rounded-full border border-primary text-primary ring-offset-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 peer sr-only"
                             id="rate-128"
@@ -315,6 +332,10 @@ const requestMicrophonePermission = async () => {
                         <div class="text-cyan-100 font-bold tracking-wide actual-decoded-message">
                           {decodedMessage}
                         </div>
+                      </div>
+                    {:else if hasError}
+                      <div class="font-mono text-xs text-red-400">
+                        <span>Error decoding chirpy signal: {errorMessage}</span>
                       </div>
                     {/if}
                   </div>
