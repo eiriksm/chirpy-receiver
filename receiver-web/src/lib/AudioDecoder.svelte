@@ -200,6 +200,7 @@ const requestMicrophonePermission = async () => {
                             data-radix-collection-item=""
                         ></button>
                         <label
+                        data-cy="rate-32"
                             class="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex flex-1 items-center justify-center px-3 py-1.5 text-xs font-mono cursor-pointer peer-data-[state=checked]:bg-cyan-600 peer-data-[state=checked]:text-white hover:bg-slate-700 transition-colors"
                             for="rate-32"
                         >
